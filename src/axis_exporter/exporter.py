@@ -85,11 +85,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         camera_port = None
         camera_user = os.getenv('AXIS_USERNAME')
         camera_password = os.getenv('AXIS_PASSWORD')
-        camera_ssl = None
+        camera_proto = None
         try:
             camera_host = query_components['camera_host'][0]
             camera_port = int(query_components['camera_port'][0])
-            camera_ssl = query_components['camera_ssl'][0] == "true"
+            camera_proto = query_components['camera_proto'][0]
         except KeyError as e:
             print_err("missing or invalid parameter %s" % e)
             self.return_error()
@@ -112,9 +112,9 @@ class RequestHandler(BaseHTTPRequestHandler):
                 error_detected = True
 
 
-        if url.path == self.server.endpoint and camera_host and camera_user and camera_password and camera_port and camera_ssl is not None:
+        if url.path == self.server.endpoint and camera_host and camera_user and camera_password and camera_port and camera_proto is not None:
 
-            camera_url = "{}://{}:{}".format("https" if camera_ssl else "http", camera_host, camera_port)
+            camera_url = "{}://{}:{}".format(camera_proto, camera_host, camera_port)
             
             request_url = camera_url + PARAMETER_LIST_API
             response = requests.get(request_url, auth=HTTPDigestAuth(camera_user, camera_password))

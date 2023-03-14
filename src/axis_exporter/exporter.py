@@ -115,16 +115,23 @@ class RequestHandler(BaseHTTPRequestHandler):
         if url.path == self.server.endpoint and camera_host and camera_user and camera_password and camera_port and camera_proto is not None:
 
             camera_url = "{}://{}:{}".format(camera_proto, camera_host, camera_port)
-            
+
             request_url = camera_url + PARAMETER_LIST_API
             response = requests.get(request_url, auth=HTTPDigestAuth(camera_user, camera_password))
-            data = parse_response(response.text)
+            try:
+                data = parse_response(response.text)
+            except ValueError:
+                print_err("ValueError when parsing params response: {}".format(response.text))
+
 
             model = data['root']['Brand']['ProdNbr']
 
             request_url = camera_url + TEMPERATURE_API
             response = requests.get(request_url, auth=HTTPDigestAuth(camera_user, camera_password))
-            data = parse_response(response.text)
+            try:
+                data = parse_response(response.text)
+            except ValueError:
+                print_err("ValueError when parsing temperature response: {}".format(response.text))
 
             for _, sensor in data['Sensor'].items():
                 prometheus_metrics.axis_temp_gauge.labels(product_name=model,
@@ -186,7 +193,7 @@ class ExporterServer(object):
         self.endpoint = endpoint
 
     def print_info(self):
-        print_err("Starting exporter on: http://{}:{}{}".format(self._address, self._port, self.endpoint))
+        print_err("Starting exporter web server on: http://{}:{}{}".format(self._address, self._port, self.endpoint))
         print_err("Press Ctrl+C to quit")
 
     def run(self):

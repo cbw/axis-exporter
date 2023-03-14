@@ -89,7 +89,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         try:
             camera_host = query_components['camera_host'][0]
             camera_port = int(query_components['camera_port'][0])
-            camera_ssl = int(query_components['camera_ssl'][0]) == 1
+            camera_ssl = query_components['camera_ssl'][0] == "true"
         except KeyError as e:
             print_err("missing or invalid parameter %s" % e)
             self.return_error()

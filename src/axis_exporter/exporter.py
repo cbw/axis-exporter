@@ -138,21 +138,24 @@ class RequestHandler(BaseHTTPRequestHandler):
                                                           node=camera_host,
                                                           sensor_name=sensor['Name']).set(sensor['Fahrenheit'])
 
-            for heater_id, heater in data['Heater'].items():
-                if heater['Status'] == "Stopped":
-                    heater_state = 0
-                elif heater['Status'] == "Running":
-                    heater_state = 1
-                else:
-                    heater_state = 2
+            try:
+                for heater_id, heater in data['Heater'].items():
+                    if heater['Status'] == "Stopped":
+                        heater_state = 0
+                    elif heater['Status'] == "Running":
+                        heater_state = 1
+                    else:
+                        heater_state = 2
 
-                prometheus_metrics.axis_heater_status.labels(product_name=model,
-                                                             node=camera_host,
-                                                             heater_id=heater_id).set(heater_state)
+                    prometheus_metrics.axis_heater_status.labels(product_name=model,
+                                                                node=camera_host,
+                                                                heater_id=heater_id).set(heater_state)
 
-                prometheus_metrics.axis_heater_timer.labels(product_name=model,
-                                                            node=camera_host,
-                                                            heater_id=heater_id).set(heater['TimeUntilStop'])
+                    prometheus_metrics.axis_heater_timer.labels(product_name=model,
+                                                                node=camera_host,
+                                                                heater_id=heater_id).set(heater['TimeUntilStop'])
+            except KeyError:
+                print_err("Axis camera does not return heater data")
 
             # get the amount of time the request took
             REQUEST_TIME.observe(time.time() - start_time)
